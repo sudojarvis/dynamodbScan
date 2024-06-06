@@ -1,64 +1,101 @@
-# README: Setting Up DynamoDB Permissions and Cross-Account Access
+### Cross-Account Setup
 
-## Instructions
+#### For Customer Side:
 
+1. **Create a new role with the following trust relationship:**
 
-1. **Attach an Inline Policy to the User**
-    - On the **Permissions** page, click **Add inline policy**.
-    - Select the **JSON** tab.
-    - Paste the policy below, replacing `{target_account}` with the target account ID:
-        ```json
-        {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Sid": "Statement1",
-                    "Effect": "Allow",
-                    "Action": [
-                        "sts:AssumeRole",
-                        "iam:PassRole"
-                    ],
-                    "Resource": [
-                        "arn:aws:iam::{target_account}:role/{role_name}"
-                    ]
-                }
-            ]
-        }
-        ```
-   
+   Replace `{source_id}` with the AWS account ID of the source account and `{source_user}` with the username of the source user.
 
-2. **Create a Role in the Target Account**
-    - Sign in to the AWS Management Console with target account credentials.
-    - Go to **IAM** > **Roles** > **Create role**.
-    - Select **Another AWS account**.
-    - Enter the source account ID.
-    - Click **Next: Permissions**.
+   ```json
+   {
+       "Version": "2012-10-17",
+       "Statement": [
+           {
+               "Sid": "Statement1",
+               "Effect": "Allow",
+               "Principal": {
+                   "AWS": "arn:aws:iam::{source_id}:user/{source_user}"
+               },
+               "Action": "sts:AssumeRole"
+           }
+       ]
+   }
+   ```
 
-3. **Attach a Trust Policy to the Role**
-    - On the **Permissions** page, create an inline policy:
-        - Click **Create policy**, select the **JSON** tab, and paste the policy below, replacing `{source_id}` with the source account ID:
-            ```json
-            {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Sid": "Statement1",
-                        "Effect": "Allow",
-                        "Principal": {
-                            "AWS": "arn:aws:iam::{source_id}:user/{source_user}"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                ]
-            }
-            ```
-        - Click **Review Policy**.
-        - Name the policy `TrustPolicy`.
-        - Click **Create policy**.
-    - Attach `AmazonEC2FullAccess` or the newly created `TrustPolicy`.
-   
+2. **Attach the following policy to the role:**
 
-   ### Resources
-    - [Cross-Account Access](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html)
-    - [ACCESS RESOURCES USING IAM](https://repost.aws/knowledge-center/cross-account-access-iam)
-    - [STACK OVERFLOW](https://stackoverflow.com/questions/73206798/launch-ec2-instance-using-iam-role-on-multiple-aws-accounts)
+   ```json
+   {
+       "Version": "2012-10-17",
+       "Statement": [
+           {
+               "Effect": "Allow",
+               "Action": [
+                   "ec2:DescribeInstances",
+                   "ec2:StartInstances",
+                   "ec2:StopInstances",
+                   "ec2:RebootInstances",
+                   "ec2:TerminateInstances",
+                   "ec2:DescribeVolumes",
+                   "ec2:DescribeTags",
+                   "ec2:DescribeInstanceStatus",
+                   "ec2:DescribeVolumeStatus",
+                   "ec2-instance-connect:SendSSHPublicKey",
+                   "ec2:DescribeSecurityGroups",
+                   "ec2:DescribeRouteTables",
+                   "ec2:DescribeSubnets",
+                   "ec2:DescribeVpcs",
+                   "ec2:RunInstances",
+                   "ec2:DescribeImages",
+                   "ec2:CreateTags",
+                   "ec2:DescribeInstanceTypes"
+               ],
+               "Resource": "*"
+           },
+           {
+               "Effect": "Allow",
+               "Action": [
+                   "dynamodb:CreateBackup",
+                   "dynamodb:ListBackups",
+                   "dynamodb:DescribeBackup",
+                   "dynamodb:DeleteBackup",
+                   "dynamodb:RestoreTableFromBackup",
+                   "dynamodb:DescribeTable",
+                   "dynamodb:CreateTable",
+                   "dynamodb:ListTables",
+                   "dynamodb:Scan",
+                   "dynamodb:UpdateTable",
+                   "dynamodb:DeleteTable",
+                   "dynamodb:BatchWriteItem",
+                   "dynamodb:PutItem",
+                   "dynamodb:DeleteItem",
+                   "dynamodb:BatchGetItem",
+                   "dynamodb:GetItem",
+                   "dynamodb:Query"
+               ],
+               "Resource": "*"
+           }
+       ]
+   }
+   ```
+
+3. **Attach the ARN of the role to the user policy in the source account to switch roles.**
+
+#### For Service Side:
+
+1. **Attach the ARN of the role created in the customer account:**
+
+   Replace `{customer_id}` with the AWS account ID of the customer account and `{role_name}` with the name of the role created.
+
+   ```json
+   {
+       "Version": "2012-10-17",
+       "Statement": [
+           {
+               "Effect": "Allow",
+               "Action": "sts:AssumeRole",
+               "Resource": "arn:aws:iam::{customer_id}:role/{role_name}"
+           }
+       ]
+   }
+   ```
