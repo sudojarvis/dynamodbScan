@@ -8,12 +8,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	awscredentials "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/aws-sdk-go-v2/service/sts/types"
-	ststypes "github.com/aws/aws-sdk-go-v2/service/sts/types"
 )
 
 // func AssumeRole(roleArn, roleSessionName string) (ststypes.Credentials, error) {
@@ -37,26 +35,26 @@ import (
 // 	return *result.Credentials, nil
 // }
 
-func assumeRole(accessKey, secretKey, roleArn, roleSessionName string) (ststypes.Credentials, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")))
-	if err != nil {
-		return ststypes.Credentials{}, fmt.Errorf("unable to load SDK config: %v", err)
-	}
+// func assumeRole(accessKey, secretKey, roleArn, roleSessionName string) (ststypes.Credentials, error) {
+// 	cfg, err := config.LoadDefaultConfig(context.TODO(),
+// 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")))
+// 	if err != nil {
+// 		return ststypes.Credentials{}, fmt.Errorf("unable to load SDK config: %v", err)
+// 	}
 
-	stsClient := sts.NewFromConfig(cfg)
-	input := &sts.AssumeRoleInput{
-		RoleArn:         aws.String(roleArn),
-		RoleSessionName: aws.String(roleSessionName),
-	}
+// 	stsClient := sts.NewFromConfig(cfg)
+// 	input := &sts.AssumeRoleInput{
+// 		RoleArn:         aws.String(roleArn),
+// 		RoleSessionName: aws.String(roleSessionName),
+// 	}
 
-	result, err := stsClient.AssumeRole(context.TODO(), input)
-	if err != nil {
-		return ststypes.Credentials{}, fmt.Errorf("error assuming role: %v", err)
-	}
+// 	result, err := stsClient.AssumeRole(context.TODO(), input)
+// 	if err != nil {
+// 		return ststypes.Credentials{}, fmt.Errorf("error assuming role: %v", err)
+// 	}
 
-	return *result.Credentials, nil
-}
+// 	return *result.Credentials, nil
+// }
 
 func GetCallerIdentity(creds types.Credentials) (*sts.GetCallerIdentityOutput, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithCredentialsProvider(
